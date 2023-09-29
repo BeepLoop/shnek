@@ -47,7 +47,37 @@ void input() {
 }
 
 void logic() {
-  // code for logic
+  // movement direction logic
+  switch (dir) {
+  case LEFT: {
+    posX -= 1;
+    if (posX == 0) {
+      posX = width - 1;
+    }
+    break;
+  }
+  case RIGHT: {
+    posX += 1;
+    if (posX == width) {
+      posX = 0;
+    }
+    break;
+  }
+  case UP: {
+    posY -= 1;
+    if (posY == 0) {
+      posY = height;
+    }
+    break;
+  }
+  case DOWN: {
+    posY += 1;
+    if (posY == height) {
+      posY = 0;
+    }
+    break;
+  }
+  }
 }
 
 int main() {
