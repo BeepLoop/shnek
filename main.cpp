@@ -2,10 +2,13 @@
 #include <iostream>
 #include <unistd.h>
 
+enum Direction { LEFT, RIGHT, UP, DOWN };
+
 bool gameOver;
 const int width = 20;
 const int height = 20;
 int posX, posY, foodX, foodY, score;
+Direction dir;
 char snake, food, wall;
 
 void setup() {
@@ -15,6 +18,7 @@ void setup() {
   wall = '#';
   posX = width / 2;
   posY = height / 2;
+  dir = LEFT;
   foodX = rand() % width - 1;
   foodY = rand() % height - 1;
   score = 0;
@@ -51,10 +55,13 @@ int main() {
   setup();
 
   while (!gameOver) {
-    draw();
-
-    sleep(1);        // sleep for 1sec
     system("clear"); // clear the screen
+                     //
+    draw();
+    input();
+    logic();
+
+    sleep(1); // sleep for 1sec
   }
 
   return 0;
