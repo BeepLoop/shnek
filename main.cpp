@@ -86,7 +86,7 @@ int main() {
 
   while (!gameOver) {
     system("clear"); // clear the screen
-                     //
+
     draw();
     input();
     logic();
