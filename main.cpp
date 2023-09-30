@@ -146,6 +146,13 @@ void logic() {
   }
   }
 
+  // check if we hit ourself
+  for (int i = 0; i < snekLength; ++i) {
+    if (tailX[i] == posX && tailY[i] == posY) {
+      gameOver = true;
+    }
+  }
+
   // eating logic
   if (posX == foodX && posY == foodY) {
     score++; // increase the score
