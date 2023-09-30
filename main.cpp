@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <random>
 #include <unistd.h>
+#include <vector>
 
 enum Direction { LEFT, RIGHT, UP, DOWN };
 
@@ -11,6 +12,9 @@ bool gameOver;
 const int width = 20;
 const int height = 20;
 int posX, posY, foodX, foodY, score;
+/* std::vector<char> tailX, tailY; */
+int tailX[100], tailY[100];
+int snekLength;
 Direction dir;
 int ch;
 
@@ -37,6 +41,7 @@ void setup() {
   dir = RIGHT;
   foodX = randomizer(width);
   foodY = randomizer(height);
+  snekLength = 0;
   score = 0;
 
   left = right = (int)'|';
@@ -51,7 +56,7 @@ void setup() {
   nodelay(stdscr, TRUE);
   curs_set(0);
 
-  win = newwin(height, width, 2, 0);
+  win = newwin(height, width, 6, 0);
 }
 
 void draw() {
@@ -60,6 +65,7 @@ void draw() {
   clear();
   printw("press ctrl + c to exit\n");
   printw("score: %d", score);
+  printw("\nlength: %d", snekLength);
 
   // clear the board
   for (int i = 0; i < width; ++i) {
@@ -70,6 +76,10 @@ void draw() {
 
   mvwprintw(win, foodY, foodX, "o");
   mvwprintw(win, posY, posX, "@");
+
+  for (int i = 0; i < snekLength; ++i) {
+    mvwprintw(win, tailY[i], tailX[i], "$");
+  }
 
   wborder(win, left, right, top, bottom, topl, topr, bottoml, bottomr);
 
@@ -89,6 +99,21 @@ void input() {
 }
 
 void logic() {
+  // tail movement logic
+  int prevx = tailX[0];
+  int prevy = tailY[0];
+  int prevx2, prevy2;
+  tailX[0] = posX;
+  tailY[0] = posY;
+  for (int i = 1; i < snekLength; ++i) {
+    prevx2 = tailX[i];
+    prevy2 = tailY[i];
+    tailX[i] = prevx;
+    tailY[i] = prevy;
+    prevx = prevx2;
+    prevy = prevy2;
+  }
+
   // movement direction logic
   switch (dir) {
   case LEFT: {
@@ -124,6 +149,9 @@ void logic() {
   // eating logic
   if (posX == foodX && posY == foodY) {
     score++; // increase the score
+    snekLength++;
+    /* tailX.push_back(posX); */
+    /* tailY.push_back(posY); */
 
     // move food to random position
     // regenerate pos if its in the border
