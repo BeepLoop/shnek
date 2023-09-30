@@ -1,5 +1,7 @@
 #include <cstdlib>
+#include <curses.h>
 #include <iostream>
+#include <ncurses.h>
 #include <unistd.h>
 
 enum Direction { LEFT, RIGHT, UP, DOWN };
@@ -9,41 +11,66 @@ const int width = 20;
 const int height = 20;
 int posX, posY, foodX, foodY, score;
 Direction dir;
-char snake, food, wall;
+int ch;
+
+int left, right, top, bottom, topr, topl, bottoml, bottomr;
+
+WINDOW *win;
 
 void setup() {
   gameOver = false;
-  snake = '@';
-  food = 'o';
-  wall = '#';
   posX = width / 2;
   posY = height / 2;
   dir = RIGHT;
   foodX = rand() % width - 1;
   foodY = rand() % height - 1;
   score = 0;
+
+  left = right = top = bottom = (int)'#';
+  topr = topl = bottoml = bottomr = (int)'+';
+
+  // ncurses setup
+  initscr();
+  cbreak();
+  keypad(stdscr, TRUE);
+  noecho();
+  nodelay(stdscr, TRUE);
+
+  win = newwin(height, width, 0, 0);
 }
 
 void draw() {
+  refresh();
+
   // draw board
   for (int i = 0; i < width; ++i) {
     for (int j = 0; j < height; ++j) {
-      if (j == 0 || j == width - 1 || i == 0 || i == height - 1) {
-        std::cout << wall;
-      } else if (j == posX && i == posY) {
-        std::cout << snake;
+      if (j == posX && i == posY) {
+        mvwprintw(win, i, j, "@");
       } else if (j == foodY && i == foodY) {
-        std::cout << food;
+        mvwprintw(win, i, j, "o");
       } else {
-        std::cout << " ";
+        mvwprintw(win, i, j, " ");
       }
     }
-    std::cout << std::endl;
   }
+
+  wborder(win, left, right, top, bottom, topl, topr, bottoml, bottomr);
+
+  wrefresh(win);
 }
 
 void input() {
   // code for input
+  if (ch == 'w' || ch == 'W') {
+    dir = UP;
+  } else if (ch == 'a' || ch == 'A') {
+    dir = LEFT;
+  } else if (ch == 's' || ch == 'S') {
+    dir = DOWN;
+  } else if (ch == 'd' || ch == 'D') {
+    dir = RIGHT;
+  }
 }
 
 void logic() {
@@ -81,18 +108,18 @@ void logic() {
 }
 
 int main() {
-
   setup();
 
   while (!gameOver) {
-    system("clear"); // clear the screen
+    ch = getch();
 
-    draw();
     input();
     logic();
+    draw();
 
     sleep(1); // sleep for 1sec
   }
 
+  endwin(); // cleanup for ncurses
   return 0;
 }
