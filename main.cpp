@@ -1,10 +1,8 @@
-#include <cstdlib>
-#include <curses.h>
+#include <chrono>
 #include <iostream>
 #include <ncurses.h>
 #include <random>
-#include <unistd.h>
-#include <vector>
+#include <thread>
 
 enum Direction { LEFT, RIGHT, UP, DOWN };
 
@@ -12,25 +10,17 @@ bool gameOver;
 const int width = 20;
 const int height = 20;
 int posX, posY, foodX, foodY, score;
-/* std::vector<char> tailX, tailY; */
 int tailX[100], tailY[100];
 int snekLength;
 Direction dir;
 int ch;
-
 int left, right, top, bottom, topr, topl, bottoml, bottomr;
-
 WINDOW *win;
 
 int randomizer(int max) {
   std::random_device rd;
-  // Use Mersenne Twister as the random number engine
   std::mt19937 generator(rd());
-
-  // Define a distribution (e.g., uniform distribution between 1 and 100)
   std::uniform_int_distribution<int> distribution(1, max - 1);
-
-  // Generate a random number
   return distribution(generator);
 }
 
@@ -56,7 +46,7 @@ void setup() {
   nodelay(stdscr, TRUE);
   curs_set(0);
 
-  win = newwin(height, width, 6, 0);
+  win = newwin(height, width, 4, 0);
 }
 
 void draw() {
@@ -65,7 +55,6 @@ void draw() {
   clear();
   printw("press ctrl + c to exit\n");
   printw("score: %d", score);
-  printw("\nlength: %d", snekLength);
 
   // clear the board
   for (int i = 0; i < width; ++i) {
@@ -74,11 +63,11 @@ void draw() {
     }
   }
 
-  mvwprintw(win, foodY, foodX, "o");
-  mvwprintw(win, posY, posX, "@");
+  mvwprintw(win, foodY, foodX, "6");
+  mvwprintw(win, posY, posX, "8");
 
   for (int i = 0; i < snekLength; ++i) {
-    mvwprintw(win, tailY[i], tailX[i], "$");
+    mvwprintw(win, tailY[i], tailX[i], "o");
   }
 
   wborder(win, left, right, top, bottom, topl, topr, bottoml, bottomr);
@@ -180,7 +169,7 @@ int main() {
     logic();
     draw();
 
-    sleep(1); // sleep for 1sec
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   curs_set(1);
