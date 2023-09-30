@@ -2,6 +2,7 @@
 #include <curses.h>
 #include <iostream>
 #include <ncurses.h>
+#include <random>
 #include <unistd.h>
 
 enum Direction { LEFT, RIGHT, UP, DOWN };
@@ -17,16 +18,29 @@ int left, right, top, bottom, topr, topl, bottoml, bottomr;
 
 WINDOW *win;
 
+int randomizer(int max) {
+  std::random_device rd;
+  // Use Mersenne Twister as the random number engine
+  std::mt19937 generator(rd());
+
+  // Define a distribution (e.g., uniform distribution between 1 and 100)
+  std::uniform_int_distribution<int> distribution(1, max - 1);
+
+  // Generate a random number
+  return distribution(generator);
+}
+
 void setup() {
   gameOver = false;
-  posX = width / 2;
-  posY = height / 2;
+  posX = 1;
+  posY = 1;
   dir = RIGHT;
-  foodX = rand() % width - 1;
-  foodY = rand() % height - 1;
+  foodX = randomizer(width);
+  foodY = randomizer(height);
   score = 0;
 
-  left = right = top = bottom = (int)'#';
+  left = right = (int)'|';
+  top = bottom = (int)'-';
   topr = topl = bottoml = bottomr = (int)'+';
 
   // ncurses setup
@@ -35,6 +49,7 @@ void setup() {
   keypad(stdscr, TRUE);
   noecho();
   nodelay(stdscr, TRUE);
+  curs_set(0);
 
   win = newwin(height, width, 0, 0);
 }
@@ -42,18 +57,15 @@ void setup() {
 void draw() {
   refresh();
 
-  // draw board
+  // clear the board
   for (int i = 0; i < width; ++i) {
     for (int j = 0; j < height; ++j) {
-      if (j == posX && i == posY) {
-        mvwprintw(win, i, j, "@");
-      } else if (j == foodY && i == foodY) {
-        mvwprintw(win, i, j, "o");
-      } else {
-        mvwprintw(win, i, j, " ");
-      }
+      mvwprintw(win, i, j, " ");
     }
   }
+
+  mvwprintw(win, foodY, foodX, "o");
+  mvwprintw(win, posY, posX, "@");
 
   wborder(win, left, right, top, bottom, topl, topr, bottoml, bottomr);
 
@@ -61,7 +73,6 @@ void draw() {
 }
 
 void input() {
-  // code for input
   if (ch == 'w' || ch == 'W') {
     dir = UP;
   } else if (ch == 'a' || ch == 'A') {
@@ -105,6 +116,19 @@ void logic() {
     break;
   }
   }
+
+  // eating logic
+  if (posX == foodX && posY == foodY) {
+    // move food to random position
+    // regenerate pos if its in the border
+    do {
+      foodX = randomizer(width);
+    } while (foodX == 0 || foodX == width - 1);
+
+    do {
+      foodY = randomizer(height);
+    } while (foodY == 0 || foodY == height - 1);
+  }
 }
 
 int main() {
@@ -120,6 +144,7 @@ int main() {
     sleep(1); // sleep for 1sec
   }
 
+  curs_set(1);
   endwin(); // cleanup for ncurses
   return 0;
 }
