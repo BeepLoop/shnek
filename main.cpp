@@ -51,11 +51,15 @@ void setup() {
   nodelay(stdscr, TRUE);
   curs_set(0);
 
-  win = newwin(height, width, 0, 0);
+  win = newwin(height, width, 2, 0);
 }
 
 void draw() {
   refresh();
+
+  clear();
+  printw("press ctrl + c to exit\n");
+  printw("score: %d", score);
 
   // clear the board
   for (int i = 0; i < width; ++i) {
@@ -119,6 +123,8 @@ void logic() {
 
   // eating logic
   if (posX == foodX && posY == foodY) {
+    score++; // increase the score
+
     // move food to random position
     // regenerate pos if its in the border
     do {
