@@ -7,7 +7,7 @@
 enum Direction { LEFT, RIGHT, UP, DOWN };
 
 bool gameOver;
-const int width = 20;
+const int width = 30;
 const int height = 20;
 int posX, posY, foodX, foodY, score;
 int tailX[100], tailY[100];
@@ -57,8 +57,8 @@ void draw() {
   printw("score: %d", score);
 
   // clear the board
-  for (int i = 0; i < width; ++i) {
-    for (int j = 0; j < height; ++j) {
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
       mvwprintw(win, i, j, " ");
     }
   }
