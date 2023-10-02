@@ -21,7 +21,13 @@ int randomizer(int max) {
   std::random_device rd;
   std::mt19937 generator(rd());
   std::uniform_int_distribution<int> distribution(1, max - 1);
-  return distribution(generator);
+
+  int point;
+  do {
+    point = distribution(generator);
+  } while (point == 0 || point == max - 1);
+
+  return point;
 }
 
 void setup() {
@@ -149,13 +155,15 @@ void logic() {
 
     // move food to random position
     // regenerate pos if its in the border
-    do {
-      foodX = randomizer(width);
-    } while (foodX == 0 || foodX == width - 1);
-
-    do {
-      foodY = randomizer(height);
-    } while (foodY == 0 || foodY == height - 1);
+    foodX = randomizer(width);
+    foodY = randomizer(height);
+    /* do { */
+    /*   foodX = randomizer(width); */
+    /* } while (foodX == 0 || foodX == width - 1); */
+    /*  */
+    /* do { */
+    /*   foodY = randomizer(height); */
+    /* } while (foodY == 0 || foodY == height - 1); */
   }
 }
 
