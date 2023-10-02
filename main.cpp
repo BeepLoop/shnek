@@ -17,6 +17,13 @@ int ch;
 int left, right, top, bottom, topr, topl, bottoml, bottomr;
 WINDOW *win;
 
+bool offTheBoard(int &p, int &n) {
+  if (p == 0 || p == n - 1) {
+    return true;
+  }
+  return false;
+}
+
 int randomizer(int max) {
   std::random_device rd;
   std::mt19937 generator(rd());
@@ -25,7 +32,7 @@ int randomizer(int max) {
   int point;
   do {
     point = distribution(generator);
-  } while (point == 0 || point == max - 1);
+  } while (offTheBoard(point, max));
 
   return point;
 }
@@ -157,13 +164,6 @@ void logic() {
     // regenerate pos if its in the border
     foodX = randomizer(width);
     foodY = randomizer(height);
-    /* do { */
-    /*   foodX = randomizer(width); */
-    /* } while (foodX == 0 || foodX == width - 1); */
-    /*  */
-    /* do { */
-    /*   foodY = randomizer(height); */
-    /* } while (foodY == 0 || foodY == height - 1); */
   }
 }
 
