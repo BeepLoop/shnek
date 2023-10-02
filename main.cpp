@@ -3,13 +3,16 @@
 #include <ncurses.h>
 #include <random>
 #include <thread>
+#include <tuple>
 
 enum Direction { LEFT, RIGHT, UP, DOWN };
 
 bool gameOver;
 const int width = 30;
 const int height = 20;
-int posX, posY, foodX, foodY, score;
+std::tuple<int, int> pos;
+std::tuple<int, int> food;
+int score;
 int tailX[100], tailY[100];
 int snekLength;
 Direction dir;
@@ -17,33 +20,35 @@ int ch;
 int left, right, top, bottom, topr, topl, bottoml, bottomr;
 WINDOW *win;
 
-bool offTheBoard(int &p, int &n) {
-  if (p == 0 || p == n - 1) {
+bool offTheBoard(int &px, int &py) {
+  if (px == 0 || px == width - 1 || py == 0 || py == height - 1) {
     return true;
   }
   return false;
 }
 
-int randomizer(int max) {
+void spawnFood() {
   std::random_device rd;
   std::mt19937 generator(rd());
-  std::uniform_int_distribution<int> distribution(1, max - 1);
 
-  int point;
+  int px;
+  int py;
   do {
-    point = distribution(generator);
-  } while (offTheBoard(point, max));
+    std::uniform_int_distribution<int> widthDistr(1, width - 1);
+    std::uniform_int_distribution<int> heightDistr(1, height - 1);
+    px = widthDistr(generator);
+    py = heightDistr(generator);
+  } while (offTheBoard(px, py));
 
-  return point;
+  std::get<0>(food) = px;
+  std::get<1>(food) = py;
 }
 
 void setup() {
   gameOver = false;
-  posX = 1;
-  posY = 1;
+  pos = {width / 2, height / 2};
+  spawnFood();
   dir = RIGHT;
-  foodX = randomizer(width);
-  foodY = randomizer(height);
   snekLength = 0;
   score = 0;
 
@@ -76,8 +81,12 @@ void draw() {
     }
   }
 
-  mvwprintw(win, foodY, foodX, "6");
-  mvwprintw(win, posY, posX, "8");
+  int foodx = std::get<0>(food);
+  int foody = std::get<1>(food);
+  int posx = std::get<0>(pos);
+  int posy = std::get<1>(pos);
+  mvwprintw(win, foody, foodx, "6");
+  mvwprintw(win, posy, posx, "8");
 
   for (int i = 0; i < snekLength; ++i) {
     mvwprintw(win, tailY[i], tailX[i], "o");
@@ -101,12 +110,18 @@ void input() {
 }
 
 void logic() {
+  // check if wall is hit
+  if (std::get<0>(pos) == 0 || std::get<0>(pos) == width ||
+      std::get<1>(pos) == 0 || std::get<1>(pos) == height) {
+    gameOver = true;
+  }
+
   // tail movement logic
   int prevx = tailX[0];
   int prevy = tailY[0];
   int prevx2, prevy2;
-  tailX[0] = posX;
-  tailY[0] = posY;
+  tailX[0] = std::get<0>(pos);
+  tailY[0] = std::get<1>(pos);
   for (int i = 1; i < snekLength; ++i) {
     prevx2 = tailX[i];
     prevy2 = tailY[i];
@@ -116,54 +131,45 @@ void logic() {
     prevy = prevy2;
   }
 
+  // check if hit wall
+
   // movement direction logic
   switch (dir) {
   case LEFT: {
-    posX -= 1;
-    if (posX == 0) {
-      gameOver = true;
-    }
+    /* posX -= 1; */
+    std::get<0>(pos) -= 1;
     break;
   }
   case RIGHT: {
-    posX += 1;
-    if (posX == width) {
-      gameOver = true;
-    }
+    std::get<0>(pos) += 1;
     break;
   }
   case UP: {
-    posY -= 1;
-    if (posY == 0) {
-      gameOver = true;
-    }
+    std::get<1>(pos) -= 1;
     break;
   }
   case DOWN: {
-    posY += 1;
-    if (posY == height) {
-      gameOver = true;
-    }
+    std::get<1>(pos) += 1;
     break;
   }
   }
 
   // check if we hit ourself
   for (int i = 0; i < snekLength; ++i) {
-    if (tailX[i] == posX && tailY[i] == posY) {
+    if (tailX[i] == std::get<0>(pos) && tailY[i] == std::get<1>(pos)) {
       gameOver = true;
     }
   }
 
   // eating logic
-  if (posX == foodX && posY == foodY) {
+  if (std::get<0>(pos) == std::get<0>(food) &&
+      std::get<1>(pos) == std::get<1>(food)) {
     score++; // increase the score
     snekLength++;
 
     // move food to random position
     // regenerate pos if its in the border
-    foodX = randomizer(width);
-    foodY = randomizer(height);
+    spawnFood();
   }
 }
 
